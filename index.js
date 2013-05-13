@@ -1,4 +1,3 @@
-
 /*!
  * Express - Resource
  * Copyright(c) 2010-2012 TJ Holowaychuk <tj@vision-media.ca>
@@ -171,12 +170,13 @@ Resource.prototype.map = function(method, path, fn){
  * Nest the given `resource`.
  *
  * @param {Resource} resource
+ * @param {Array} options to exclude
  * @return {Resource} for chaining
  * @see Resource#map()
  * @api public
  */
 
-Resource.prototype.add = function(resource){
+Resource.prototype.add = function(resource, options){
   var app = this.app
     , routes
     , route;
@@ -188,17 +188,20 @@ Resource.prototype.add = function(resource){
 
   // re-define previous actions
   for (var method in resource.routes) {
-    routes = resource.routes[method];
-    for (var key in routes) {
-      route = routes[key];
-      delete routes[key];
-      if (method == 'del') method = 'delete';
-      app.routes[method].forEach(function(route, i){
-        if (route.path == key) {
-          app.routes[method].splice(i, 1);
-        }
-      })
-      resource.map(route.method, route.orig, route.fn);
+    if (options == undefined || options.indexOf(method) == -1)
+    {
+      routes = resource.routes[method];
+      for (var key in routes) {
+        route = routes[key];
+        delete routes[key];
+        if (method == 'del') method = 'delete';
+        app.routes[method].forEach(function(route, i){
+          if (route.path == key) {
+            app.routes[method].splice(i, 1);
+          }
+        })
+        resource.map(route.method, route.orig, route.fn);
+      }
     }
   }
 
